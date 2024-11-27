@@ -4,11 +4,8 @@ import cn.gb.gb28181.conf.Cache;
 import cn.gb.gb28181.stream.FfmpegStream;
 import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.ls.LSResourceResolver;
 
-import javax.annotation.Resource;
 import javax.sdp.MediaDescription;
 import javax.sdp.Origin;
 import javax.sdp.SdpFactory;
@@ -23,8 +20,6 @@ import javax.sip.message.Request;
 import javax.sip.message.Response;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
 
 @Component
@@ -94,7 +89,7 @@ public class RequestProcessor {
             log.debug("Call from: " + from.getAddress().getDisplayName() + "/" + from.getAddress().getURI());
 
             ContactHeader contact = (ContactHeader) request.getHeader("Contact");
-            log.debug("Contact: " + contact.getAddress().getDisplayName() +"/"+ contact.getAddress().getURI());
+            log.debug("Contact: " + contact.getAddress().getDisplayName() + "/" + contact.getAddress().getURI());
 
             String message = StrUtil.str(request.getRawContent(), StandardCharsets.UTF_8);
             // jainSip不支持y= f=字段， 移除以解析。
@@ -122,7 +117,7 @@ public class RequestProcessor {
             }
             MediaDescription md = (MediaDescription) sdp.getMediaDescriptions(true).get(0);
 
-            Cache.cacheObj.put("host",sdp.getConnection().getAddress());
+            Cache.cacheObj.put("host", sdp.getConnection().getAddress());
             Cache.cacheObj.put("port", md.getMedia().getMediaPort());
 
             Response response = messageFactory.createResponse(Response.TRYING, request);
@@ -144,11 +139,11 @@ public class RequestProcessor {
             SessionDescription toSdp = SdpFactory.getInstance().createSessionDescription();
             Vector<MediaDescription> mediaDescriptions = new Vector<>();
             mediaDescriptions.add(
-                    SdpFactory.getInstance().createMediaDescription("video",1, 1, "RTP/AVP", new int[] {96, 98, 97})
+                    SdpFactory.getInstance().createMediaDescription("video", 1, 1, "RTP/AVP", new int[]{96, 98, 97})
             );
-            toSdp.setConnection(SdpFactory.getInstance().createConnection("IN", "IP4", "192.168.31.7"));
+            toSdp.setConnection(SdpFactory.getInstance().createConnection("IN", "IP4", "172.20.10.11"));
             toSdp.setMediaDescriptions(mediaDescriptions);
-            Origin origin = SdpFactory.getInstance().createOrigin("34020000002000000002", "192.168.31.6");
+            Origin origin = SdpFactory.getInstance().createOrigin("34020000002000000002", "172.20.10.2");
             toSdp.setOrigin(origin);
 
             ContentTypeHeader contentTypeHeader = SipFactory.getInstance().createHeaderFactory().createContentTypeHeader("APPLICATION", "SDP");
@@ -160,7 +155,7 @@ public class RequestProcessor {
                     .append("a=rtpmap:97 MPEG4/90000\r\n")
                     .append("y=0000001003\r\n")
                     .append("f=");
-           okResponse.setContent(content, contentTypeHeader);
+            okResponse.setContent(content, contentTypeHeader);
 
             inviteTid = st;
             // Defer sending the OK to simulate the phone ringing.
@@ -212,7 +207,7 @@ public class RequestProcessor {
                            ServerTransaction serverTransaction) {
         String url = "/Users/chaggle/Downloads/photo/2024-11-27.mp4";
         String ip = Cache.cacheObj.get("host").toString();
-        String port  = Cache.cacheObj.get("port").toString();
+        String port = Cache.cacheObj.get("port").toString();
         String stream = "rtp://" + ip + ":" + port;
         FfmpegStream.push(url, stream);
     }

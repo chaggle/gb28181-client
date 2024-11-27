@@ -1,11 +1,8 @@
 package cn.gb.gb28181.service;
 
-import cn.gb.gb28181.conf.Cache;
 import cn.gb.gb28181.conf.SipConfig;
-import cn.gb.gb28181.stream.FfmpegStream;
 import cn.gb.gb28181.utils.MD5Util;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.sip.*;
@@ -50,7 +47,7 @@ public class SipgateSipListener implements SipListener {
         sipConfig.setUsername("34020000002000000002");
         sipConfig.setPassword("12345678");
         sipConfig.setDomain("340200000");
-        sipConfig.setProxy("192.168.31.2:5080");
+        sipConfig.setProxy("172.20.10.11:5080");
         sipConfig.setDisplayName("chaggle");
         requestProcessor = new RequestProcessor();
     }
@@ -158,7 +155,7 @@ public class SipgateSipListener implements SipListener {
 
     public String getLocalIPAddress() {
         // 可以进行配置化管理
-        return "192.168.31.6";
+        return "172.20.10.2";
     }
 
     protected String getIPFromWhatismyip() throws MalformedURLException, IOException {
