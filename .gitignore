@@ -3,6 +3,8 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+shootmedebug.txt
+shootmelog.txt
 
 ### STS ###
 .apt_generated

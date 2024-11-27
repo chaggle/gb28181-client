@@ -1,0 +1,12 @@
+server:
+  port: 8888
+
+sip:
+  username: 34020000002000000002
+  password: 12345678
+  domain: 340200000
+  display-name: chaggle
+  proxy: 172.20.10.13:5080
+spring:
+  main:
+    allow-circular-references: true
