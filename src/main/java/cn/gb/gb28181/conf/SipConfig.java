@@ -10,5 +10,4 @@ public class SipConfig {
     private String username;
     private String password;
     private String proxy;
-
 }

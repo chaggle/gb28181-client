@@ -1,7 +1,10 @@
 package cn.gb.gb28181.service;
 
+import cn.gb.gb28181.conf.Cache;
 import cn.gb.gb28181.conf.SipConfig;
+import cn.gb.gb28181.stream.FfmpegStream;
 import cn.gb.gb28181.utils.MD5Util;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +26,8 @@ import java.text.ParseException;
 import java.util.*;
 
 @Component
+@Slf4j
 public class SipgateSipListener implements SipListener {
-    private final static Logger log = Logger.getLogger(SipgateSipListener.class);
 
     private SipConfig sipConfig;
     private SipStack sipStack;
@@ -36,16 +39,18 @@ public class SipgateSipListener implements SipListener {
     private Dialog dialog;
     private ListeningPoint lp;
     private ServerTransaction inviteTid;
-    private String localIPAddress;
+    // 本地RTP的推流端口
+    private Integer rtpPort;
+    private String rtpHost;
     private RequestProcessor requestProcessor;
     private List<ViaHeader> viaHeaders;
 
     public SipgateSipListener() throws PeerUnavailableException, InvalidArgumentException, ParseException {
         sipConfig = new SipConfig();
-        sipConfig.setUsername( "34020000002000000002");
-        sipConfig.setPassword( "12345678");
+        sipConfig.setUsername("34020000002000000002");
+        sipConfig.setPassword("12345678");
         sipConfig.setDomain("340200000");
-        sipConfig.setProxy("172.20.10.13:5080");
+        sipConfig.setProxy("192.168.31.2:5080");
         sipConfig.setDisplayName("chaggle");
         requestProcessor = new RequestProcessor();
     }
@@ -152,49 +157,8 @@ public class SipgateSipListener implements SipListener {
     }
 
     public String getLocalIPAddress() {
-//		if(localIPAddress != null)
-//		{
-//			return localIPAddress;
-//		}
-//
-//		InetAddress internetAddress = null;
-//		try
-//		{
-//			internetAddress = InetAddress.getLocalHost();
-//		}
-//		catch (UnknownHostException e)
-//		{
-//			e.printStackTrace();
-//			return "127.0.0.1";
-//		}
-//		StringBuffer address = new StringBuffer();
-//		byte[] bytes = internetAddress.getAddress();
-//		for (int j = 0; j < bytes.length; j++)
-//		{
-//			int i = bytes[j] < 0 ? bytes[j] + 256 : bytes[j];
-//			address.append(i);
-//			if (j < 3)
-//				address.append('.');
-//		}
-//
-//		localIPAddress = address.toString();
-//
-//		if(internetAddress.isSiteLocalAddress() || internetAddress.isLoopbackAddress())
-//		{
-//			try
-//			{
-//				localIPAddress = "127.0.0.1";
-//			}
-//			catch (Exception e)
-//			{
-//				e.printStackTrace();
-//				localIPAddress = "127.0.0.1";
-//			}
-//		}
-//
-//		log.debug("getLocalIp return: " + localIPAddress);
-//		return localIPAddress;
-        return "172.20.10.13";
+        // 可以进行配置化管理
+        return "192.168.31.6";
     }
 
     protected String getIPFromWhatismyip() throws MalformedURLException, IOException {
@@ -234,7 +198,7 @@ public class SipgateSipListener implements SipListener {
             ProxyAuthenticateHeader proxyAuthenticateHeader = (ProxyAuthenticateHeader) response.getHeader(ProxyAuthenticateHeader.NAME);
             try {
                 Request request = packageRegisterRequest();
-               ProxyAuthorizationHeader authorizationHeader = headerFactory.createProxyAuthorizationHeader("Digest");
+                ProxyAuthorizationHeader authorizationHeader = headerFactory.createProxyAuthorizationHeader("Digest");
                 authorizationHeader.setUsername(sipConfig.getUsername());
                 authorizationHeader.setRealm(proxyAuthenticateHeader.getRealm());
                 authorizationHeader.setNonce(proxyAuthenticateHeader.getNonce());
@@ -244,7 +208,6 @@ public class SipgateSipListener implements SipListener {
                         sipConfig.getPassword(), proxyAuthenticateHeader.getNonce(), null, Request.REGISTER,
                         "sip" + ":" + sipConfig.getProxy());
                 authorizationHeader.setResponse(res);
-
                 request.setHeader(authorizationHeader);
                 sipProvider.sendRequest(request);
             } catch (SipException e1) {
